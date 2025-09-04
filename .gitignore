@@ -1,0 +1,24 @@
+# Ignore datasets, experiments, and yolov9 folders and files
+/gyolo/
+/aggregated_weights/
+/backup/
+/experiments/
+/wandb/
+gyolo*.pt
+gyolo*.sif
+
+# Ignore the contents of data directories, but keep the placeholder READMEs
+/datasets/*
+!/datasets/README.md
+/federated_data/*
+!/federated_data/README.md
+
+
+# Ignore jupyter notebook checkpoint directories
+.ipynb_checkpoints/
+.vscode
+
+# 忽略 python 的快取檔案與快取資料夾
+__pycache__/
+*.pyc
+*.pyo

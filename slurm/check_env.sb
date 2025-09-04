@@ -1,0 +1,46 @@
+#!/bin/bash
+#SBATCH -A GOV113038
+#SBATCH --job-name=check_gpu       ## 工作名稱
+#SBATCH --output=slurm_check_env.log ## 標準輸出與錯誤輸出同時記錄到此檔案
+#SBATCH --error=slurm_check_env.log  ## 標準錯誤輸出記錄同一檔案
+#SBATCH --nodes=5                 ## 請求n個節點
+#SBATCH --gres=gpu:8              ## 請求n張 GPU
+#SBATCH --cpus-per-task=32         ## n個 CPU ( gpu x4 )
+#SBATCH --partition=gtest         ## 測試分區
+
+
+# 模組載入 (根據叢集需求)
+module purge
+module load singularity
+
+# 切換到工作目錄
+#WORKDIR=/home/waue0920/yolov9
+#cd $WORKDIR
+
+# 定義 Singularity 映像檔路徑
+SIF=/work/waue0920/open_access/gyolo_ngc2306.sif
+SINGULARITY="singularity run --nv $SIF"
+
+
+echo "==============================="
+echo "BatchNode :   $(hostname)"
+echo "==============================="
+echo " 
+
+* GPU 資源檢查"
+echo "SLURM_JOB_GPUS=$SLURM_JOB_GPUS"
+echo "SLURM_GPUS_PER_NODE=$SLURM_GPUS_PER_NODE"
+echo "SLURM_GPUS_ON_NODE=$SLURM_GPUS_ON_NODE"
+echo ""
+echo "可用 GPU 檢查 (nvidia-smi)"
+nvidia-smi --list-gpus
+
+gpu_num=$(nvidia-smi -L | wc -l)
+
+echo "==============================="
+# 執行 `env.sh`，將環境資訊記錄到 log
+#srun --mpi=pmix $SINGULARITY bash env.sh
+# cmd="srun --gres=gpu:$SLURM_GPUS_ON_NODE --mpi=pmix $SINGULARITY bash env.sh" # twcc 不知為何SLURM_GPUS_ON_NODE 為空
+cmd="srun --gres=gpu:$gpu_num --mpi=pmix $SINGULARITY bash env.sh"
+echo $cmd
+$cmd
