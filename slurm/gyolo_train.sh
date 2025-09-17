@@ -7,7 +7,7 @@ echo " !! Now !! We are in gyolo_train.sh @ $HOSTNAME !!"
 echo "[$HOSTNAME][0]-------------------"
 
 ## 工作目錄
-WORKDIR=/home/waue0920/gyolo/src/
+WORKDIR=../gyolo/
 cd $WORKDIR
 
 ## 設定 NCCL 詳細紀錄

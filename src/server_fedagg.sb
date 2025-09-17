@@ -23,7 +23,7 @@ if [ -z "${WROOT}" ]; then
     exit 1
 fi
 
-SINGULARITY_IMG="${WROOT}/yolo9t2_ngc2306_20241226.sif"
+SINGULARITY_IMG="${WROOT}/gyolo_ngc2306.sif"
 
 echo "Project root: ${WROOT}"
 echo "Singularity image: ${SINGULARITY_IMG}"

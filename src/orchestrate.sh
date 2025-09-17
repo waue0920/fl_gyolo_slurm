@@ -52,16 +52,16 @@ source "${WROOT}/src/env.sh"
 # --- 3. Configuration ---
 if [ "$#" -ne 3 ]; then
     echo "Usage: $0 <DATASET_NAME> <CLIENT_NUM> <TOTAL_ROUNDS> [--manual] [--val]"
-    echo "ex : $0 kitti 4 2"
-    echo "ex : $0 kitti 4 2 --manual > sop.sh"
-    echo "ex : $0 kitti 4 2 --val"
-    echo "ex : $0 kitti 4 2 --manual --val > sop.sh"
+    echo "ex : $0 coco 4 2"
+    echo "ex : $0 coco 4 2 --manual > sop.sh"
+    echo "ex : $0 coco 4 2 --val"
+    echo "ex : $0 coco 4 2 --manual --val > sop.sh"
     exit 1
 fi
 DATASET_NAME=$1
 CLIENT_NUM=$2
 TOTAL_ROUNDS=$3
-INITIAL_WEIGHTS="yolov9-c.pt"
+INITIAL_WEIGHTS="gyolo.pt"
 
 
 

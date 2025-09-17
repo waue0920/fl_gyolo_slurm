@@ -21,6 +21,7 @@ source "./src/env.sh"
 
 
 
+
 TIMESTAMP=$(date +%Y%m%d%H%M)
 RUN_COUNT=$(find "${EXPERIMENTS_BASE_DIR}" -maxdepth 1 -type d | wc -l)
 RUN_NUM=$((RUN_COUNT))
@@ -32,7 +33,8 @@ cat ./src/env.sh
 echo "===================================="
 
 
-# 啟動 fl 訓練，將 EXP_ID 一併傳遞給 orchestrate.sh
+
+# 啟動 gyolo federated learning 流程
 bash "${WROOT}/src/orchestrate.sh" "$DATASET_NAME" "$CLIENT_NUM" "$TOTAL_ROUNDS" --val --manual >> ./experiments/sop.sh
 bash "${WROOT}/src/orchestrate.sh" "$DATASET_NAME" "$CLIENT_NUM" "$TOTAL_ROUNDS"
 

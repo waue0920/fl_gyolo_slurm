@@ -1,12 +1,17 @@
-# Ignore datasets, experiments, and yolov9 folders and files
+# Ignore datasets, experiments, and gyolo folders and files
+/coco/
 /gyolo/
 /aggregated_weights/
 /backup/
 /experiments/
+/coco/
+/slurm/
 /wandb/
-gyolo*.pt
-gyolo*.sif
 
+
+*.pt
+gyolo*.sif
+*.log
 # Ignore the contents of data directories, but keep the placeholder READMEs
 /datasets/*
 !/datasets/README.md

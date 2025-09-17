@@ -2,10 +2,10 @@
 #SBATCH --ntasks-per-node=1
 
 # ===================================================================================
-# Generic Slurm Executor for a Client Training Task
+# Generic Slurm Executor for a Gyolo Client Training Task
 # ===================================================================================
 # This script is a generic wrapper. It does not contain any project-specific logic.
-# Its only job is to execute the provided training script with the given arguments.
+# Its only job is to execute the provided gyolo training script with the given arguments.
 #
 # All Slurm configurations like --job-name, --output, --error, and --chdir
 # are expected to be set by the calling script (e.g., orchestrator.sh) via
@@ -20,7 +20,7 @@ source "${WROOT}/src/env.sh"
 # --- Argument Verification ---
 if [ "$#" -eq 0 ]; then
     echo "Error: This script requires arguments to be passed to the executor script."
-    echo "Usage: sbatch [options] client_train.sb <executor_script> [args...]"
+    echo "Usage: sbatch [options] client_train.sb <executor_script> [args...] (gyolo federated client)"
     exit 1
 fi
 

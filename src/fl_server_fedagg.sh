@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Shell Script to Submit Federated Aggregation Job for a Specific Round
+# Shell Script to Submit Federated Aggregation Job for a Specific Round (gyolo)
 #
 # 依 fl_server_fedavg.sh 結構，支援多聚合演算法
 

@@ -7,11 +7,11 @@ from collections import OrderedDict
 from pathlib import Path
 from aggregation import AGGREGATORS
 
-# Add YOLOv9 directory to Python path for model imports
+# Add gyolo directory to Python path for model imports
 if 'WROOT' in os.environ:
-    yolov9_path = os.path.join(os.environ['WROOT'], 'yolov9')
-    if yolov9_path not in sys.path:
-        sys.path.insert(0, yolov9_path)
+    gyolo_path = os.path.join(os.environ['WROOT'], 'gyolo')
+    if gyolo_path not in sys.path:
+        sys.path.insert(0, gyolo_path)
 
 def federated_aggregate(input_dir: Path, output_file: Path, expected_clients: int, round_num: int, algorithm: str, **agg_kwargs):
     print("================================================================================")
@@ -48,10 +48,16 @@ def federated_aggregate(input_dir: Path, output_file: Path, expected_clients: in
     for i, path in enumerate(client_weights_paths):
         try:
             ckpt = torch.load(path, map_location='cpu')
+            # gyolo best.pt 可能直接是 state_dict 或 dict 需根據實際格式調整
             if 'model' in ckpt:
                 all_state_dicts.append(ckpt['model'].state_dict())
                 if i == 0:
                     template_model = ckpt['model']
+                    template_ckpt = ckpt
+            elif 'state_dict' in ckpt:
+                all_state_dicts.append(ckpt['state_dict'])
+                if i == 0:
+                    template_model = None
                     template_ckpt = ckpt
             else:
                 all_state_dicts.append(ckpt)
@@ -59,7 +65,7 @@ def federated_aggregate(input_dir: Path, output_file: Path, expected_clients: in
             print(f"\nError: Failed to load weight file: {path}")
             print(f"  - Reason: {e}")
             exit(1)
-    if template_model is None:
+    if template_model is None and template_ckpt is None:
         print("Error: Could not load template model from client weights")
         exit(1)
 
