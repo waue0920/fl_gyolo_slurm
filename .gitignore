@@ -1,6 +1,5 @@
 # Ignore datasets, experiments, and gyolo folders and files
 /coco/
-/gyolo/
 /aggregated_weights/
 /backup/
 /experiments/
