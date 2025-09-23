@@ -14,7 +14,7 @@ set -o pipefail
 
 # --- 1. Argument Parsing ---
 if [ "$#" -ne 6 ]; then
-    echo "Usage: $0 <EXP_DIR> <WROOT> <ROUND> <CLIENT_NUM> <DATASET_NAME> <CURRENT_WEIGHTS_PATH>"
+    echo "Usage: $0 <EXP_DIR> <WROOT> <ROUND> <CLIENT_NUM> <DATASET_NAME>"
     exit 1
 fi
 
@@ -23,7 +23,7 @@ WROOT=$2
 ROUND=$3
 CLIENT_NUM=$4
 DATASET_NAME=$5
-CURRENT_WEIGHTS=$6
+
 
 # --- 2. Common Configuration ---
 # Extract EXP_ID from EXP_DIR for more meaningful wandb names
@@ -36,8 +36,9 @@ WANDB_PROJECT="${EXP_ID}"
 # These are parameters shared across all clients for this round.
 OUTPUT_PROJECT_PATH="${EXP_DIR}/client_outputs/${EXP_ID}"
 
-EXTRA_ARGS="--epochs ${EPOCHS} --batch ${BATCH_SIZE} --img ${IMG_SIZE} --workers ${WORKER}"
-TRAIN_HYPERPARAMS="${EXTRA_ARGS} --hyp ${HYP} --optimizer AdamW --flat-cos-lr --no-overlap --close-mosaic 2 --save-period 1 --noplots"
+if [ -z "$TRAIN_EXTRA_ARGS" ]; then
+    TRAIN_EXTRA_ARGS="--epochs 50 --batch 8 --img 640 --workers 4 --hyp hyp.yaml --optimizer AdamW --flat-cos-lr --no-overlap --close-mosaic 2 --save-period 1 --noplots"
+fi
 
 # echo "======================================================================"
 # echo "## Submitting all client training jobs for Round ${ROUND}"
@@ -45,7 +46,6 @@ TRAIN_HYPERPARAMS="${EXTRA_ARGS} --hyp ${HYP} --optimizer AdamW --flat-cos-lr --
 # echo "## Wandb Project: ${OUTPUT_PROJECT_PATH}"
 # echo "## Experiment Directory: ${EXP_DIR}"
 # echo "## Number of Clients: ${CLIENT_NUM}"
-# echo "## Input Weights: ${CURRENT_WEIGHTS}"
 # echo "======================================================================"
 
 # --- 3. Loop and Submit Jobs ---
@@ -84,10 +84,9 @@ for c in $(seq 1 ${CLIENT_NUM}); do
         "${WROOT}/src/client_train.sb"
         "./src/client_train.sh"
         --data-yaml "${CLIENT_DATA_YAML}"
-        --weights-in "${CURRENT_WEIGHTS}"
         --project-out "${OUTPUT_PROJECT_PATH}"
         --name-out "${WANDB_RUN_NAME}"
-        --extra-args "${TRAIN_HYPERPARAMS}"
+        --extra-args "${TRAIN_EXTRA_ARGS}"
     )
     echo "${SBATCH_CMD[@]}"
     "${SBATCH_CMD[@]}"

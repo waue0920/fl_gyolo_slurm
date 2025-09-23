@@ -35,6 +35,15 @@ ROUND=$3
 CLIENT_NUM=$4
 shift 4
 
+# Source the environment file
+ENV_SH_PATH="${WROOT}/src/env.sh"
+if [ -f "$ENV_SH_PATH" ]; then
+    echo "Sourcing environment variables from ${ENV_SH_PATH}"
+    source "$ENV_SH_PATH"
+else
+    echo "Warning: Environment file not found at ${ENV_SH_PATH}"
+fi
+
 # Extract EXP_ID from EXP_DIR for path construction
 EXP_ID=$(basename "${EXP_DIR}")
 
