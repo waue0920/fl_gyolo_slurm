@@ -70,9 +70,8 @@ if [ -z "$MODEL_CFG" ]; then
     MODEL_CFG="${WROOT}/gyolo/models/caption/gyolo.yaml"
 fi
 
-if [ -z "$INITIAL_WEIGHTS" ]; then
-    INITIAL_WEIGHTS="${WROOT}/gyolo.pt"
-fi
+
+# INITIAL_WEIGHTS 先不檢查，也不給初始值。
 
 
 ## 下面這段多節點運算會導致port 衝突而failed
@@ -89,7 +88,19 @@ NGPU=${SLURM_GPUS_ON_NODE:-1}
 NNODES=1
 NODE_RANK=0
 MASTER_ADDR=localhost
-MASTER_PORT=9527
+# MASTER_PORT=9527
+get_free_port() {
+    while :; do
+        PORT=$(( ( RANDOM % 50000 )  + 10000 ))
+        # 檢查 port 是否已被使用
+        if ! lsof -i:"$PORT" >/dev/null 2>&1; then
+            echo "$PORT"
+            return
+        fi
+    done
+}
+
+MASTER_PORT=$(get_free_port)
 
 
 if [ -z "$CLIENT_GPUS" ]; then
@@ -119,6 +130,9 @@ if [ ! -f "${SINGULARITY_IMG}" ]; then
     echo "Error: Singularity image not found at ${SINGULARITY_IMG}"
     exit 1
 fi
+
+
+
 
 # --- 2. Execute YOLOv9 Training inside Singularity ---
 cd "${WROOT}/gyolo"
