@@ -215,18 +215,35 @@ if __name__ == "__main__":
     # fedopt 參數準備
     if args.algorithm == 'fedopt':
         if args.round == 1:
-            # 第一輪直接載入 INITIAL_WEIGHTS (gyolo.pt)
+            # 第一輪直接載入 INITIAL_WEIGHTS
             gyolo_pt_path = os.environ.get('INITIAL_WEIGHTS')
-            if not gyolo_pt_path or not os.path.exists(gyolo_pt_path):
+            if gyolo_pt_path == "":
+                # 因為沒有 INITIAL_WEIGHTS，所以取第一個 client 權重結構並全零化
+                if not client_weights_paths:
+                    print("Error: No client weights available for zero initialization.")
+                    exit(1)
+                ckpt = torch.load(client_weights_paths[0], map_location='cpu')
+                if 'model' in ckpt:
+                    template_model = ckpt['model']
+                else:
+                    print("Error: Client checkpoint must contain 'model' object for zero initialization.")
+                    exit(1)
+                for p in template_model.parameters():
+                    p.data.zero_()
+                agg_kwargs['global_weights'] = template_model.state_dict()
+                print("[INFO] INITIAL_WEIGHTS is empty, using zero-initialized weights from client model structure.")
+            elif not gyolo_pt_path or not os.path.exists(gyolo_pt_path):
                 print(f"Error: INITIAL_WEIGHTS not set or file not found: {gyolo_pt_path}")
                 exit(1)
-            ckpt = torch.load(gyolo_pt_path, map_location='cpu')
-            if 'model' in ckpt:
-                template_model = ckpt['model']
             else:
-                print("Error: INITIAL_WEIGHTS checkpoint must contain 'model' object.")
-                exit(1)
-            agg_kwargs['global_weights'] = template_model.state_dict()
+                # 載入 INITIAL_WEIGHTS (gyolo.pt)
+                ckpt = torch.load(gyolo_pt_path, map_location='cpu')
+                if 'model' in ckpt:
+                    template_model = ckpt['model']
+                else:
+                    print("Error: INITIAL_WEIGHTS checkpoint must contain 'model' object.")
+                    exit(1)
+                agg_kwargs['global_weights'] = template_model.state_dict()
         else:
             # 第二輪以後載入上一輪聚合結果
             prev_agg_path = args.output_file.parent / f"w_s_r{args.round-1}.pt"
