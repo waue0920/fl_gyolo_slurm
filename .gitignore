@@ -11,6 +11,11 @@
 *.pt
 gyolo*.sif
 *.log
+
+# ignore gyolo 
+gyolo/runs/
+gyolo/wandb/
+
 # Ignore the contents of data directories, but keep the placeholder READMEs
 /datasets/*
 !/datasets/README.md
@@ -22,7 +27,7 @@ gyolo*.sif
 .ipynb_checkpoints/
 .vscode
 
-# 忽略 python 的快取檔案與快取資料夾
+# Ignore python cache files and directories
 __pycache__/
 *.pyc
 *.pyo

@@ -1,7 +1,8 @@
 
 import torch
+import os
 
-def aggregate(client_weights, global_weights=None, mu=0.01, **kwargs):
+def aggregate(client_weights, global_weights=None, **kwargs):
     """
     FedProx 聚合：FedAvg + Proximal term (mu)。
     參數：
@@ -11,6 +12,8 @@ def aggregate(client_weights, global_weights=None, mu=0.01, **kwargs):
     回傳：
         aggregated_weights: 與 client_weights[0] 結構相同的平均權重
     """
+
+    mu = float(os.environ.get('SERVER_FEDPROX_MU', 0.01))
     if not client_weights:
         raise ValueError("client_weights is empty!")
     if global_weights is None:

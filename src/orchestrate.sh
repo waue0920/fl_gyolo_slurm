@@ -48,6 +48,14 @@ set -- "${filtered_args[@]}"
 # --- 2. Environment and Path Setup ---
 source "${WROOT}/src/env.sh"
 
+# --- 2.1. Check federated_data/$DATASET_NAME exists and is non-empty ---
+FEDDATA_DIR="${WROOT}/federated_data/${DATASET_NAME}_${CLIENT_NUM}"
+if [ ! -d "$FEDDATA_DIR" ] || [ -z "$(ls -A "$FEDDATA_DIR" 2>/dev/null)" ]; then
+    echo "Error: Federated data directory '$FEDDATA_DIR' does not exist or is empty."
+    echo "Please prepare the dataset first (e.g. with data_prepare.py) before running FL orchestration."
+    exit 1
+fi
+
 
 # --- 3. Configuration ---
 if [ "$#" -ne 3 ]; then
@@ -239,18 +247,12 @@ mkdir -p "${EXP_DIR}/fed_agg_logs"
 cp "${WROOT}/src/env.sh" "${EXP_DIR}/env.sh"
 
 # --- 6. Setup Logging ---
-# Redirect all output to both console and log file
 exec > >(tee -a "${EXP_DIR}/orchestrator.log")
 exec 2> >(tee -a "${EXP_DIR}/orchestrator.log" >&2)
-
 
 echo "##  STARTING NEW PARALLEL FEDERATED LEARNING EXPERIMENT (AUTOMATED V3)"
 echo "##  Experiment Directory: ${EXP_DIR}"
 echo "##  Environment: ${EXP_DIR}/env.sh"
-
-echo -e "\n--- STEP 1: Preparing data for ${CLIENT_NUM} clients... ---"
-python3 "${SRC_DIR}/data_prepare.py" --dataset-name "${DATASET_NAME}" --num-clients "${CLIENT_NUM}"
-echo "--- Data preparation step complete. ---"
 
 echo -e "\n--- STEP 2: Starting Federated Learning Rounds... ---"
 for r in $(seq 1 ${TOTAL_ROUNDS}); do

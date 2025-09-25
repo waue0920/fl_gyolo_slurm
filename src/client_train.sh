@@ -17,7 +17,7 @@ set -e # Exit immediately if a command exits with a non-zero status.
 # --- 0. Argument Parsing ---
 # Initialize variables
 DATA_YAML=""
-WEIGHTS_IN=""
+
 ## 參數 PROJECT_OUT 實際會被傳給 gyolo/caption/train.py 的 --project
 ## 這個參數同時決定 wandb project name 及訓練結果主目錄
 PROJECT_OUT=""
@@ -31,7 +31,6 @@ EXTRA_ARGS=""
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --data-yaml) DATA_YAML="$2"; shift ;;
-        --weights-in) WEIGHTS_IN="$2"; shift ;;
         --project-out) PROJECT_OUT="$2"; shift ;;
         --name-out) NAME_OUT="$2"; shift ;;
         --extra-args) EXTRA_ARGS="$2"; shift ;; # Pass extra arguments as a single string
@@ -41,10 +40,9 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Verify required arguments
-if [ -z "${DATA_YAML}" ] || [ -z "${WEIGHTS_IN}" ] || [ -z "${PROJECT_OUT}" ] || [ -z "${NAME_OUT}" ]; then
+if [ -z "${DATA_YAML}" ]  || [ -z "${PROJECT_OUT}" ] || [ -z "${NAME_OUT}" ]; then
     echo "Usage: $0 \
     --data-yaml <path_to_client.yaml> \
-    --weights-in <path_to_input_weights.pt> \
     --project-out <path_to_output_project_dir> \
     --name-out <output_run_name> \
     [--extra-args \"--epochs 50 --batch 8\"]"
@@ -68,7 +66,13 @@ if [ -z "$SLURM_GPUS_ON_NODE" ]; then
     SLURM_GPUS_ON_NODE=$(nvidia-smi -L | wc -l)
 fi
 
-MODEL_CFG="${WROOT}/gyolo/models/caption/gyolo.yaml"
+if [ -z "$MODEL_CFG" ]; then
+    MODEL_CFG="${WROOT}/gyolo/models/caption/gyolo.yaml"
+fi
+
+
+# INITIAL_WEIGHTS 先不檢查，也不給初始值。
+
 
 ## 下面這段多節點運算會導致port 衝突而failed
 # --- NCCL/SLURM 多節點環境變數設定 --- 
@@ -84,7 +88,19 @@ NGPU=${SLURM_GPUS_ON_NODE:-1}
 NNODES=1
 NODE_RANK=0
 MASTER_ADDR=localhost
-MASTER_PORT=9527
+# MASTER_PORT=9527
+get_free_port() {
+    while :; do
+        PORT=$(( ( RANDOM % 50000 )  + 10000 ))
+        # 檢查 port 是否已被使用
+        if ! lsof -i:"$PORT" >/dev/null 2>&1; then
+            echo "$PORT"
+            return
+        fi
+    done
+}
+
+MASTER_PORT=$(get_free_port)
 
 
 if [ -z "$CLIENT_GPUS" ]; then
@@ -97,7 +113,7 @@ echo "==========================================================================
 echo ">> Starting Client Training (Decoupled)"
 echo ">> Project Root:    ${WROOT}"
 echo ">> Data YAML:       ${DATA_YAML}"
-echo ">> Input Weights:   ${WEIGHTS_IN}"
+echo ">> Input Weights:   ${INITIAL_WEIGHTS}"
 echo ">> Wandb & Output Project:  ${PROJECT_OUT}"
 echo ">> Wandb & Output Name:     ${NAME_OUT}"
 echo ">> Device List:     ${DEVICE_LIST}"
@@ -105,10 +121,7 @@ echo ">> Extra Args:      ${EXTRA_ARGS}"
 echo "================================================================================"
 
 # Check if files exist before proceeding
-if [ ! -f "${WEIGHTS_IN}" ]; then
-    echo "Error: Input weights file not found at ${WEIGHTS_IN}"
-    exit 1
-fi
+
 if [ ! -f "${WROOT}/${DATA_YAML}" ]; then
     echo "Error: Data YAML file not found at ${WROOT}/${DATA_YAML}"
     exit 1
@@ -117,6 +130,9 @@ if [ ! -f "${SINGULARITY_IMG}" ]; then
     echo "Error: Singularity image not found at ${SINGULARITY_IMG}"
     exit 1
 fi
+
+
+
 
 # --- 2. Execute YOLOv9 Training inside Singularity ---
 cd "${WROOT}/gyolo"
@@ -129,7 +145,7 @@ DP_SRUN_CMD=(
     --bind "/home/waue0920/dataset/coco:/home/waue0920/dataset/coco"
     "${SINGULARITY_IMG}"
     python "caption/train.py"
-    --weights "${WEIGHTS_IN}"
+    --weights "${INITIAL_WEIGHTS}"
     --data "${WROOT}/${DATA_YAML}"
     --cfg "${MODEL_CFG}"
     --project "${PROJECT_OUT}"
@@ -145,7 +161,7 @@ SRUN_CMD=(
     torchrun --nproc_per_node="$NGPU" --nnodes="$NNODES" 
     --node_rank="$NODE_RANK" --master_addr="$MASTER_ADDR" --master_port="$MASTER_PORT"
     "./caption/train.py"
-    --weights "${WEIGHTS_IN}"
+    --weights "${INITIAL_WEIGHTS}"
     --data "${WROOT}/${DATA_YAML}"
     --cfg "${MODEL_CFG}"
     --project "${PROJECT_OUT}"

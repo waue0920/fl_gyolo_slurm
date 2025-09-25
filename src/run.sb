@@ -20,6 +20,7 @@ source "./src/env.sh"
 # ===================================================================================
 
 
+cd "${WROOT}"
 
 
 TIMESTAMP=$(date +%Y%m%d%H%M)
@@ -33,26 +34,25 @@ cat ./src/env.sh
 echo "===================================="
 
 
-
 # 啟動 gyolo federated learning 流程
 bash "${WROOT}/src/orchestrate.sh" "$DATASET_NAME" "$CLIENT_NUM" "$TOTAL_ROUNDS" --val --manual >> ./experiments/sop.sh
 bash "${WROOT}/src/orchestrate.sh" "$DATASET_NAME" "$CLIENT_NUM" "$TOTAL_ROUNDS"
 
-cd "${WROOT}"
-echo "#################"
-echo "# Start validation..."
-echo "#################"
-# 驗證階段
-if singularity exec --nv --bind "${WROOT}":"${WROOT}" \
-    "${SINGULARITY_IMG}" \
-    python3 "${WROOT}/src/validate_federated_model.py" \
-    --experiment-dir "${WROOT}/experiments/${EXP_ID}" \
-    --data-config "${WROOT}/data/${DATASET_NAME}.yaml" \
-    ; then
-    echo "--- Model validation complete. ---"
-    VALIDATION_MSG="##  Validation results: experiments/${EXP_ID}/validation/"
-else
-    echo "Warning: Model validation failed, but experiment completed successfully."
-    VALIDATION_MSG="##  Validation: Failed (see logs above)"
-fi
-echo "${VALIDATION_MSG}"
+# 以下驗證還沒改成gyolo (as was yolov9 )
+# echo "#################"
+# echo "# Start validation..."
+# echo "#################"
+# # 驗證階段
+# if singularity exec --nv --bind "${WROOT}":"${WROOT}" \
+#     "${SINGULARITY_IMG}" \
+#     python3 "${WROOT}/src/validate_federated_model.py" \
+#     --experiment-dir "${WROOT}/experiments/${EXP_ID}" \
+#     --data-config "${WROOT}/data/${DATASET_NAME}.yaml" \
+#     ; then
+#     echo "--- Model validation complete. ---"
+#     VALIDATION_MSG="##  Validation results: experiments/${EXP_ID}/validation/"
+# else
+#     echo "Warning: Model validation failed, but experiment completed successfully."
+#     VALIDATION_MSG="##  Validation: Failed (see logs above)"
+# fi
+# echo "${VALIDATION_MSG}"
