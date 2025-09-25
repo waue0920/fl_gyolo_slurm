@@ -6,7 +6,7 @@
 /coco/
 /slurm/
 /wandb/
-
+/gyolo/wandb
 
 *.pt
 gyolo*.sif
