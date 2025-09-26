@@ -3,7 +3,7 @@ import torch
 from collections import OrderedDict, deque
 import numpy as np
 from sklearn.decomposition import PCA
-
+import os
 
 def get_loss_drop(results):
     """
@@ -65,7 +65,7 @@ def aggregate(
     client_vectors,
     global_weights,
 ):
-    import os
+
     history_window = int(os.environ.get('SERVER_FEDAWA_HISTORY_WINDOW', 5))
     pca_dim = int(os.environ.get('SERVER_FEDAWA_PCA_DIM', 4))
     softmax_temperature = float(os.environ.get('SERVER_FEDAWA_SOFTMAX_TEMPERATURE', 1.0))

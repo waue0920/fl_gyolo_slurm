@@ -5,7 +5,7 @@ export WROOT="/home/waue0920/fl_gyolo_slurm"
 export EXPERIMENTS_BASE_DIR="${WROOT}/experiments"
 
 ## Dataset
-export DATASET_NAME="cocoR100"
+export DATASET_NAME="cocoA100"
 export CLIENT_NUM=4   # Client 端數量
 # 以上在  $WROOT/federated_data/ 內要有 ${DATASET_NAME}_${CLIENT_NUM} 的資料夾
 
@@ -23,11 +23,11 @@ export SLURM_ACCOUNT="GOV113038"
 ## FL client 端的 slurm 參數
 #####################
 ## FL
-export TOTAL_ROUNDS=5  # FL Rounds
+export TOTAL_ROUNDS=6  # FL Rounds
 export EPOCHS=10
 ## Gyolo
 export BATCH_SIZE=16   # 需要是 gpu 數量的n數: 一般 GPUsx8 高 GPUsx16 
-export WORKER=8   # cpu = gpu x 4
+export WORKER=16   # cpu = gpu x 4
 export IMG_SIZE=640
 export HYP="${WROOT}/gyolo/data/hyps/hyp.scratch-cap.yaml" # hyp.scratch-cap.yaml or hyp.scratch-cap-e.yaml
 export MODEL_CFG="${WROOT}/gyolo/models/caption/gyolo.yaml" # 
@@ -35,14 +35,14 @@ export MODEL_CFG="${WROOT}/gyolo/models/caption/gyolo.yaml" #
 export TRAIN_EXTRA_ARGS="--epochs ${EPOCHS} --batch ${BATCH_SIZE} --img ${IMG_SIZE} --workers ${WORKER} --hyp ${HYP} --optimizer AdamW --flat-cos-lr --no-overlap --close-mosaic 2 --save-period 1 --noplots"
 ## Parallel
 #export CLIENT_NODES=1  # 目前每個Client只支援單節點多GPU運算，因為NCCL port 會衝突
-export CLIENT_GPUS=2
-export CLIENT_CPUS=8   # cpu = gpu x 4
+export CLIENT_GPUS=4
+export CLIENT_CPUS=16   # cpu = gpu x 4
 
 
 #####################
 ## FL Server 端的參數
 #####################
-export SERVER_ALG="fedopt"   # 支持 fedavg, fedprox, fedavgm, 
+export SERVER_ALG="fedavg"   # 支持 fedavg, fedprox, fedavgm, 
 
 # FedProx 演算法超參數（Server端命名
 export SERVER_FEDPROX_MU=0.01  # FedProx 的 proximal term 係數
